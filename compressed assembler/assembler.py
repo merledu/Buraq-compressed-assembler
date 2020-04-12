@@ -1,4 +1,4 @@
-f = open("newFormatMachineCode.txt", "r")
+f = open("assembly.txt", "r")
 l = f.readlines()
 f.close()
 #print(l)
@@ -626,7 +626,7 @@ inst={"add":["1001","00","00","10"] ,
           "beqz":["110","00","00","01"] ,
           "bnez":["111","00","00","01"] ,
           "nop":["0000","00000","00000","01"]}
-file=open("newFormatMachineCode.txt","r")
+file=open("assembly.txt","r")
 data=file.readlines()
 machine=[]
 assembly=[]
@@ -706,9 +706,8 @@ for i in assembly:
         imd = ((((ex[1]).split(","))[1]).split("("))[0]
         offset = ((ex[1].split(","))[1])[-3:-1]
         regs = ex[1].split(",")
-        imd = int(imd) / 4
         imd = str(int(imd))
-        if regData.get(regs[0]) != None and regData.get(offset) != None and int(imd) % 4 == 0 and 0 <= int(imd) <= 124:
+        if regData.get(regs[0]) != None and regData.get(offset) != None and (int(imd)*4 )% 4 == 0 and 0 <= int(imd) <= 124:
             a = inst.get("lw")
             b = (bin(int(imd)))  # [2:]
             if (str(b))[0] == "-":
@@ -728,7 +727,7 @@ for i in assembly:
             rep = assembly.index(i)
             machine[rep] = f
 
-        if regs[0] != "zero" and offset == "sp" and 0 <= int(imd) <= 252 and int(imd) % 4 == 0:
+        if regs[0] != "zero" and offset == "sp" and 0 <= int(imd) <= 252 and (int(imd)*4 ) % 4 == 0:
             a = inst.get("lwsp")
             b = (bin(int(imd)))  # [2:]
             if (str(b))[0] == "-":
@@ -751,9 +750,8 @@ for i in assembly:
         imd = ((((ex[1]).split(","))[1]).split("("))[0]
         offset = ((ex[1].split(","))[1])[-3:-1]
         regs = ex[1].split(",")
-        imd = int(imd) / 4
         imd = str(int(imd))
-        if regData.get(regs[0]) != None and regData.get(offset) != None and int(imd) % 4 == 0 and 0 <= int(imd) <= 124:
+        if regData.get(regs[0]) != None and regData.get(offset) != None and (int(imd)*4 )% 4 == 0 and 0 <= int(imd) <= 124:
             # print(imd)
             a = inst.get("sw")
             b = (bin(int(imd)))  # [2:]
@@ -771,7 +769,7 @@ for i in assembly:
             rep = assembly.index(i)
             machine[rep] = f
 
-        if offset == "sp" and 0 <= int(imd) <= 252 and int(imd) % 4 == 0:
+        if offset == "sp" and 0 <= int(imd) <= 252 and (int(imd)*4 )% 4 == 0:
             a = inst.get("swsp")
             b = (bin(int(imd)))  # [2:]
             if (str(b))[0] == "-":
@@ -1047,7 +1045,7 @@ for index,code in enumerate(machineCode):
             instruction[index] = "\t" + "c.nop"
 
 #print(instruction)
-ff = open("Machine_Code.txt", "w")
+ff = open("machine.txt", "w")
 for i in machineCode:
     wr =  i + "\n"
     ff.write(wr)
