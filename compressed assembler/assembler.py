@@ -1,3 +1,4 @@
+import bitstring
 f = open("assembly.txt", "r")
 l = f.readlines()
 f.close()
@@ -626,7 +627,7 @@ inst={"add":["1001","00","00","10"] ,
           "beqz":["110","00","00","01"] ,
           "bnez":["111","00","00","01"] ,
           "nop":["0000","00000","00000","01"]}
-file=open("assembly.txt","r")
+file=open("C:\\Users\\hafiz\\Desktop\\newFormatMachineCode.txt","r")
 data=file.readlines()
 machine=[]
 assembly=[]
@@ -706,8 +707,9 @@ for i in assembly:
         imd = ((((ex[1]).split(","))[1]).split("("))[0]
         offset = ((ex[1].split(","))[1])[-3:-1]
         regs = ex[1].split(",")
+        #imd = int(imd) / 4
         imd = str(int(imd))
-        if regData.get(regs[0]) != None and regData.get(offset) != None and (int(imd)*4 )% 4 == 0 and 0 <= int(imd) <= 124:
+        if regData.get(regs[0]) != None and regData.get(offset) != None and int(imd) % 4 == 0 and 0 <= int(imd) <= 252:
             a = inst.get("lw")
             b = (bin(int(imd)))  # [2:]
             if (str(b))[0] == "-":
@@ -727,7 +729,7 @@ for i in assembly:
             rep = assembly.index(i)
             machine[rep] = f
 
-        if regs[0] != "zero" and offset == "sp" and 0 <= int(imd) <= 252 and (int(imd)*4 ) % 4 == 0:
+        if regs[0] != "zero" and offset == "sp" and 0 <= int(imd) <= 252 and int(imd) % 4 == 0:
             a = inst.get("lwsp")
             b = (bin(int(imd)))  # [2:]
             if (str(b))[0] == "-":
@@ -750,8 +752,9 @@ for i in assembly:
         imd = ((((ex[1]).split(","))[1]).split("("))[0]
         offset = ((ex[1].split(","))[1])[-3:-1]
         regs = ex[1].split(",")
+        #imd = int(imd) / 4
         imd = str(int(imd))
-        if regData.get(regs[0]) != None and regData.get(offset) != None and (int(imd)*4 )% 4 == 0 and 0 <= int(imd) <= 124:
+        if regData.get(regs[0]) != None and regData.get(offset) != None and int(imd) % 4 == 0 and 0 <= int(imd) <= 252:
             # print(imd)
             a = inst.get("sw")
             b = (bin(int(imd)))  # [2:]
@@ -769,7 +772,7 @@ for i in assembly:
             rep = assembly.index(i)
             machine[rep] = f
 
-        if offset == "sp" and 0 <= int(imd) <= 252 and (int(imd)*4 )% 4 == 0:
+        if offset == "sp" and 0 <= int(imd) <= 252 and int(imd) % 4 == 0:
             a = inst.get("swsp")
             b = (bin(int(imd)))  # [2:]
             if (str(b))[0] == "-":
@@ -843,34 +846,50 @@ for i in assembly:
 
     if ex[0] == "beq":
         regs = ex[1].split(",")
-        #imd = regs[1]
-        if regData.get(regs[0]) != None   and regs[1] == "zero":
-            label = raw.index((regs[2])+":")
-            index = label - raw.index(i)
-            if index < 0:
-                index += labels - 1
-                index *= 4
-                #index -= 1
-            else:
-                index -= labels + 1
-                index *= 4
-                #index += 1
-            #index *= 2
-            print(label, index)
+        # imd = regs[1]
+        if regData.get(regs[0]) != None and regs[1] == "zero":
 
+            m = machine[assembly.index(i)]
+            m = bin(int(m, 16))
+            # print(len(m[2:]),m[2:])
+            m = (m[2:])
+            m = "0" * (31 - len(m)) + m
+            m = m[::-1]
+            # print(m)
+            # print(m[0:31+1])
+            imm = m[8:12] + m[25:31] + m[7] + m[31]
+            # imm = m[1:5] + m[5:11] + m[11] + m[12]
+            # print(imm,len(imm))
+            # m = ((bitstring.BitArray("0b"+imm)).bin)
+            imm = bitstring.Bits(bin=imm[::-1])
+            # print(imm.bin)
+            # print(bin(imm))
+            # print(imm.int)
+            index = imm.int
+
+            # label = raw.index((regs[2])+":")
+            # index = label - raw.index(i)
+            """if index < 0:
+                index += 1
+            else:
+                index -= 1"""
+            # print(label,index)
+            index *= 2
+            print(index)
             if -256 <= index <= 254:
                 a = inst.get("beqz")
                 if index < 0:
-                    imd = ('{:0b}'.format(int(index) & 0xffffffff))[-9:]
+                    imd = ('{:0b}'.format(index & 0xffffffff))[-11:]
                 else:
-                    imd = ('{:0b}'.format(int(index) & 0xffffffff))
+                    imd = ('{:0b}'.format(index & 0xffffffff))
                     imd = "0" * (11 - len(imd)) + imd
+                # print(imd)
                 imd = imd[::-1]
-                print(imd,imd[3],imd[4])
+                print(imd[::-1])
                 final = a[0] + imd[8] + imd[4] + imd[3] + regData.get(regs[0]) + imd[7] + imd[6] + imd[2] + imd[1] + \
                         imd[
                             5] + a[3]
-                print(final)
+                # print(final)
                 b = hex(int(final, 2))
                 f = b[2:]
                 f = "0" * (4 - len(f)) + f
@@ -879,17 +898,17 @@ for i in assembly:
 
     if ex[0] == "beqz":
         regs = ex[1].split(",")
-        #imd = regs[1]
+        # imd = regs[1]
         if regData.get(regs[0]) != None:
-            label = raw.index((regs[1])+":")
-            index = label - raw.index(i)
-            if index < 0:
-                index += labels - 1
-                index *= 4
-                #index -= 1
-            else:
-                index -= labels + 1
-                index *= 4
+            m = machine[assembly.index(i)]
+            m = bin(int(m, 16))
+            m = (m[2:])
+            m = "0" * (32 - len(m)) + m
+            m = m[::-1]
+            imm = m[8:12] + m[25:31] + m[7] + m[31]
+            imm = bitstring.Bits(bin=imm[::-1])
+            index = imm.int
+            index *= 2
             if -256 <= index <= 254:
                 a = inst.get("beqz")
                 if index < 0:
@@ -897,7 +916,7 @@ for i in assembly:
                 else:
                     imd = ('{:0b}'.format(int(index) & 0xffffffff))
                     imd = "0" * (11 - len(imd)) + imd
-                #print(index,imd)
+                # print(index,imd)
                 imd = imd[::-1]
                 final = a[0] + imd[8] + imd[4] + imd[3] + regData.get(regs[0]) + imd[7] + imd[6] + imd[2] + imd[1] + \
                         imd[
@@ -912,15 +931,33 @@ for i in assembly:
         regs = ex[1].split(",")
         # imd = regs[1]
         if regData.get(regs[0]) != None and regs[1] == "zero":
-            label = raw.index((regs[2]) + ":")
-            index = label - raw.index(i)
-            if index < 0:
-                index += labels - 1
-                index *= 4
-                #index -= 1
+            # label = raw.index((regs[2]) + ":")
+            # index = label - raw.index(i)
+            m = machine[assembly.index(i)]
+            m = bin(int(m, 16))
+            # print(len(m[2:]),m[2:])
+            m = (m[2:])
+            m = "0" * (32 - len(m)) + m
+            m = m[::-1]
+            # print(m)
+            # print(m[0:31+1])
+            imm = m[8:12] + m[25:31] + m[7] + m[31]
+            # imm = m[1:5] + m[5:11] + m[11] + m[12]
+            # print(imm,len(imm))
+            # m = ((bitstring.BitArray("0b"+imm)).bin)
+            imm = bitstring.Bits(bin=imm[::-1])
+            # print(imm.bin)
+            # print(bin(imm))
+            # print(imm.int)
+            index = imm.int
+            # print(index,"aaaaaaaaaaaa")
+
+            """if index < 0:
+                index += 1
             else:
-                index -= labels + 1
-                index *= 4
+                index -= 1"""
+            index *= 2
+            # print(index,index/2)
             if -256 <= index <= 254:
                 a = inst.get("bnez")
                 if index < 0:
@@ -942,15 +979,15 @@ for i in assembly:
         regs = ex[1].split(",")
         # imd = regs[1]
         if regData.get(regs[0]) != None:
-            label = raw.index((regs[1]) + ":")
-            index = label - raw.index(i)
-            if index < 0:
-                index += labels - 1
-                index *= 4
-                #index -= 1
-            else:
-                index -= labels + 1
-                index *= 4
+            m = machine[assembly.index(i)]
+            m = bin(int(m, 16))
+            m = (m[2:])
+            m = "0" * (32 - len(m)) + m
+            m = m[::-1]
+            imm = m[8:12] + m[25:31] + m[7] + m[31]
+            imm = bitstring.Bits(bin=imm[::-1])
+            index = imm.int
+            index *= 2
             if -256 <= index <= 254:
                 a = inst.get("bnez")
                 if index < 0:
