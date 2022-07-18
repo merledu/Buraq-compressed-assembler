@@ -1,5 +1,5 @@
 # Buraq-compressed-assembler
-This is the compressed assembler for RISC-V. It comperss 32 bit assembly into 16 bit.
+This is the compressed assembler for RISC-V. It compresses 32 bit assembly into 16 bit.
 
 ## How to run compressed assembler?
 First install `Python 3.7+` to run this  `compressed assembler`.
